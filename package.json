@@ -9,11 +9,12 @@
     "leotech": "index.js"
   },
   "type": "module",
-  "name": "filewatch",
+  "name": "ltdev",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "run": "node -r esm index.js"
+    "test": "node -r esm index.js",
+    "setup": "npm install -g"
   },
   "author": "",
   "license": "ISC",
