@@ -128,4 +128,4 @@ dist
 .pnp.*
 
 #extra 
-auth-token.txt
+session-lock.json

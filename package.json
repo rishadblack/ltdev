@@ -3,6 +3,7 @@
     "axios": "^1.5.1",
     "chokidar": "^3.5.3",
     "commander": "^11.0.0",
+    "dotenv": "^16.4.5",
     "inquirer": "^9.2.11"
   },
   "bin": {
