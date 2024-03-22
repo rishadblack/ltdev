@@ -1,22 +1,25 @@
 import { program } from "commander";
-import axios from "axios";
+import { postModuleApp, updateProject } from "../app/utils.js";
 import chokidar from "chokidar";
 import { readFile, stat } from "fs/promises";
 import { basename, dirname } from "path"; // Import dirname function to get the directory name
 
 const watchCommand = program
-  .command("watch")
-  .description("Watch files for changes and upload them")
-  .action(async () => {
-    const watchDirectory = "./files";
-    const uploadEndpoint = "http://example-moduler.local/api/v1/watch";
+  .command("watch <project>")
+  .description("Watch files for changes and upload them for a specific project")
+  .action(async (project) => {
+    const projectData = await updateProject(project);
+
+    const watchDirectory = `./files/${projectData[project].dir_name}`; // Set the directory based on the project name
 
     const watcher = chokidar.watch(watchDirectory, {
       ignoreInitial: true,
     });
 
     watcher.on("ready", () => {
-      console.log("Initial scan complete. Watching for changes...");
+      console.log(
+        `Watching directory for ${projectData[project].name}: ${watchDirectory}`
+      );
     });
 
     watcher.on("add", async (filePath) => {
@@ -47,16 +50,10 @@ const watchCommand = program
       // Handle directory removal as needed
     });
 
-    watcher.on("move", async (oldPath, newPath) => {
-      await handleFileEvent(newPath, "move");
-      console.log(`File ${oldPath} has been moved to ${newPath}.`);
-      // Handle file movement as needed
-    });
-
     async function handleFileEvent(filePath, actionType) {
       try {
         const fileContent = await readFile(filePath, "utf-8");
-        console.log(`Uploading ${filePath}...`);
+        // console.log(`Uploading ${filePath}...`);
 
         const fileName = basename(filePath);
         const fileDir = dirname(filePath); // Get the directory name
@@ -67,9 +64,10 @@ const watchCommand = program
           content: fileContent,
           directory: fileDir, // Include directory name in the payload
           action_type: actionType,
+          last_modified: (await stat(filePath)).mtime,
         });
 
-        console.log(`Uploaded ${filePath} successfully.`);
+        // console.log(`Uploaded ${filePath} successfully.`);
       } catch (error) {
         console.error(`Upload of ${filePath} failed. Error: ${error}`);
       }
@@ -79,10 +77,11 @@ const watchCommand = program
       try {
         await uploadFile({
           file_name: "", // Empty file name for directories
-          file_path: dirPath,
+          file_path: "",
           content: "", // Empty content for directories
-          directory: "", // Empty directory name for directories
+          directory: dirPath, // Empty directory name for directories
           action_type: actionType,
+          last_modified: "",
         });
 
         console.log(`Handled directory event (${actionType}): ${dirPath}`);
@@ -94,20 +93,21 @@ const watchCommand = program
     }
 
     async function uploadFile(payload) {
-      console.log(payload);
-      return;
       try {
-        const response = await axios.post(uploadEndpoint, payload);
-
-        if (response.status !== 200) {
-          throw new Error("Invalid response from the server.");
-        }
+        const response = await postModuleApp(
+          projectData[project].dev_url,
+          payload,
+          projectData[project].access_key
+        );
+        // console.log(
+        //   `Uploaded ${payload.file_path} successfully for ${project}`
+        // );
       } catch (error) {
-        throw new Error(`Upload failed. Error: ${error}`);
+        console.error(`Error uploading file for ${project}:`, error);
       }
     }
 
-    console.log(`Watching directory: ${watchDirectory}`);
+    // console.log(`Watching directory: ${watchDirectory}`);
   });
 
 export default watchCommand;

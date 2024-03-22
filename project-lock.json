@@ -1,0 +1,40 @@
+[
+  {
+    "ProjectOne": {
+      "name": "Project One",
+      "dir_name": "ProjectOne",
+      "access_key": "A80RCPDEN1",
+      "dev_url": "http://example-moduler.local/api/v1/watch/ProjectOne",
+      "prod_url": "http://example-moduler.local",
+      "modules": {
+        "ModuleOne": {
+          "name": "Module One",
+          "dir_name": "ModuleOne"
+        },
+        "ModuleTwo": {
+          "name": "Module Two",
+          "dir_name": "ModuleTwo"
+        }
+      }
+    }
+  },
+  {
+    "ProjectTwo": {
+      "name": "Project Two",
+      "dir_name": "ProjectTwo",
+      "access_key": "E0WZ1ITLKF",
+      "dev_url": "http://example-moduler.local/api/v1/watch/ProjectTwo",
+      "prod_url": "http://example-moduler.local",
+      "modules": {
+        "ModuleOne": {
+          "name": "Module One",
+          "dir_name": "ModuleOne"
+        },
+        "ModuleThree": {
+          "name": "Module Three",
+          "dir_name": "ModuleThree"
+        }
+      }
+    }
+  }
+]

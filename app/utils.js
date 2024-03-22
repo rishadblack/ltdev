@@ -14,6 +14,59 @@ async function setSession(data) {
 }
 
 // Function to read a JSON file and extract the specified property
+async function updateProject(ProjectSlug = null) {
+  try {
+    const response = await postWithToken("v1/user/projects", {
+      project: ProjectSlug,
+    });
+    // Read the contents of the file
+    await writeFile(
+      "project-lock.json",
+      JSON.stringify(response.data, null, 2)
+    );
+
+    if (ProjectSlug === null) return response.data;
+
+    const projectTwoData = response.data.find((project) =>
+      project.hasOwnProperty(ProjectSlug)
+    );
+
+    // Extract the specified property
+    return projectTwoData;
+
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      `Error reading user details from session file: ${error.message}`
+    );
+  }
+}
+
+// Function to read a JSON file and extract the specified property
+async function getProject(ProjectSlug = null) {
+  try {
+    // Read the contents of the file
+    const fileContent = await readFile("project-lock.json", "utf-8");
+
+    // Parse the JSON content into an object
+    const jsonData = JSON.parse(fileContent);
+
+    if (ProjectSlug === null) return jsonData;
+
+    const projectTwoData = jsonData.find((project) =>
+      project.hasOwnProperty(ProjectSlug)
+    );
+
+    // Extract the specified property
+    return projectTwoData;
+  } catch (error) {
+    throw new Error(
+      `Error reading user details from session file: ${error.message}`
+    );
+  }
+}
+
+// Function to read a JSON file and extract the specified property
 async function getUser() {
   try {
     // Read the contents of the file
@@ -58,6 +111,24 @@ async function postWithToken(url, data = {}) {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
+    if (error.response.data.status === "error") {
+      throw new Error(error.response.data.message);
+    } else {
+      throw new Error(error.message);
+    }
+  }
+}
+
+async function postModuleApp(url, data = {}, token = "") {
+  try {
+    const response = await axios.post(`${url}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
     if (error.response.data.status === "error") {
       throw new Error(error.response.data.message);
     } else {
@@ -67,4 +138,12 @@ async function postWithToken(url, data = {}) {
 }
 
 // Export the functions
-export { setSession, getUser, getBearerToken, postWithToken };
+export {
+  setSession,
+  updateProject,
+  getProject,
+  getUser,
+  getBearerToken,
+  postWithToken,
+  postModuleApp,
+};

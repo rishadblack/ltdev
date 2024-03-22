@@ -49,6 +49,7 @@ const loginCommand = program
       if (error.response.data.status === "error") {
         console.error(error.response.data.message);
       } else {
+        console.log(error);
         console.error("Login failed. Error:", error.message);
       }
     }
