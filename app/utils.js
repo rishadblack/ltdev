@@ -58,7 +58,11 @@ async function postWithToken(url, data = {}) {
     });
     return response.data;
   } catch (error) {
-    throw new Error(`Request failed: ${error.message}`);
+    if (error.response.data.status === "error") {
+      throw new Error(error.response.data.message);
+    } else {
+      throw new Error(error.message);
+    }
   }
 }
 

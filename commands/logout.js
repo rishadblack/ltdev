@@ -1,26 +1,25 @@
-// commands/download.js
+// commands/logout.js
 import "dotenv/config";
 import { program } from "commander";
 import { postWithToken } from "../app/utils.js";
 
-const downloadCommand = program
-  .command("pull")
+const logoutCommand = program
+  .command("logout")
   .description("Download a JSON file from the API")
   .action(async () => {
     try {
-      const response = await postWithToken("v1/user");
+      const response = await postWithToken("v1/user/logout");
 
       // Check if the request was successful and save the JSON data to a file
       if (response && response.status === "success") {
-        console.log(response);
-        console.log("Downloaded JSON file successfully.");
+        console.log("Logged out successfully.");
       } else {
-        console.error("Download failed. Invalid response from the server.");
+        console.error("Logout failed. Invalid response from the server.");
       }
     } catch (error) {
       console.error(error.message);
     }
   });
 
-// Export downloadCommand as the default export
-export default downloadCommand;
+// Export logoutCommand as the default export
+export default logoutCommand;
