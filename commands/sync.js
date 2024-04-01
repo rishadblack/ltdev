@@ -1,69 +1,103 @@
 import { program } from "commander";
-import { postModuleApp, updateProject } from "../app/utils.js";
-import chokidar from "chokidar";
-import { readdir, stat, readFile } from "fs/promises";
+import {
+  postModuleApp,
+  updateProject,
+  postModuleAppDownload,
+  getAllFiles,
+  getFileHash,
+} from "../app/utils.js";
+import { readdir, stat, readFile, writeFile, mkdir } from "fs/promises";
+import { join, basename, dirname } from "path";
 
 const syncCommand = program
-  .command("sync <project>")
-  .description("Watch files for changes and upload them")
-  .action(async (project) => {
+  .command("sync <project> <module>")
+  .description("Watch projects for changes and upload them")
+  .action(async (project, module) => {
     const projectData = await updateProject(project);
 
     // Define the directory to watch and the API endpoint to upload to
-    const watchDirectory = `./files/${projectData[project].dir_name}`; // Change this to your desired directory
+    const watchDirectory = `./projects/${projectData[project].dir_name}/${projectData[project]["modules"][module].dir_name}`; // Change this to your desired directory
 
-    // Initialize the file watcher
-    const watcher = chokidar.watch(watchDirectory, {
-      ignoreInitial: true, // Ignore initial scan
+    const getManifestFiles = await manifestFile({
+      module: module,
     });
 
-    // Sync existing files and directories
-    try {
-      const files = await readdir(watchDirectory);
-      for (const file of files) {
-        const filePath = `${watchDirectory}/${file}`;
-        const fileStat = await stat(filePath);
-        console.log(`Syncing ${fileStat.isFile()}...`);
+    const watchDirectoryFilesData = await getAllFiles(watchDirectory);
 
-        if (!fileStat.isFile()) {
-          // Handle directory
-          // console.log(`Handling directory event (${actionType}): ${dirPath}`);
-          await uploadFile({
-            file_name: "", // Empty file name for directories
-            file_path: "",
-            content: "", // Empty content for directories
-            directory: filePath, // Directory path
-            action_type: "create-dir",
-            last_modified: "",
+    const ignoredExtensions = [".gitkeep", ".ignore", ".temp"]; // Add your desired extensions here
+
+    const watchDirectoryFiles = watchDirectoryFilesData.filter((file) => {
+      const extension = file.substr(file.lastIndexOf("."));
+      return !ignoredExtensions.includes(extension);
+    });
+
+    // Check if getManifestFiles contains data
+    if (getManifestFiles && getManifestFiles["file_manifest"].length > 0) {
+      // Iterate over each file in the manifest
+      for (const manifestFile of getManifestFiles["file_manifest"]) {
+        const location = "projects\\" + manifestFile["location"];
+
+        // Check if the file's location exists in the watch directory
+        if (!watchDirectoryFiles.includes(location)) {
+          const response = await downloadFile({
+            directory: location, // Include directory name in the payload
           });
-        } else {
-          // Handle file
-          const fileContent = await readFile(filePath, "utf-8");
-          console.log(`Uploading ${filePath}...`);
+          const fileData = Buffer.from(response.content, "base64");
 
-          // Make a POST request to the API endpoint to create or update the file
-          const fileName = basename(filePath);
-          const fileDir = dirname(filePath); // Get the directory name
+          // Ensure that the directory structure leading up to the file exists
+          await mkdir(dirname(location), { recursive: true });
+
+          // Write the file to the local filesystem
+          await writeFile(location, fileData);
+          console.log(`File ${location} has been downloaded.`);
+        }
+      }
+    }
+
+    // Iterate over each file in the watch directory
+    for (const watchDirectoryFile of watchDirectoryFiles) {
+      // Construct the manifest location from the watch directory file path
+      const manifestLocation = watchDirectoryFile.replace("projects\\", "");
+      const fileHash = await getFileHash(watchDirectoryFile);
+      // Find the corresponding entry in the manifest file
+      const manifestEntry = getManifestFiles["file_manifest"].find(
+        (file) => file["location"] === manifestLocation
+      );
+      // console.log(watchDirectoryFile, manifestEntry["hash"], fileHash);
+      // Check if the file's location exists in the manifest
+      if (
+        !manifestEntry ||
+        (manifestEntry && manifestEntry["hash"] !== fileHash)
+      ) {
+        try {
+          const fileContent = await readFile(watchDirectoryFile, "utf-8");
+
+          const fileName = basename(watchDirectoryFile);
+          const fileDir = dirname(watchDirectoryFile); // Get the directory name
+
+          const fileContentBase64 = Buffer.from(fileContent).toString("base64");
 
           await uploadFile({
             file_name: fileName,
-            file_path: filePath,
-            content: fileContent,
+            file_path: watchDirectoryFile,
+            content: fileContentBase64,
             directory: fileDir, // Include directory name in the payload
-            action_type: "create",
-            last_modified: (await stat(filePath)).mtime,
+            action_type: "update",
+            last_modified: (await stat(watchDirectoryFile)).mtime,
           });
-          console.log(`Uploaded ${filePath} successfully.`);
+          console.log(`File ${manifestLocation} has been updated.`);
+        } catch (error) {
+          console.error(
+            `Upload of ${watchDirectoryFile} failed. Error: ${error}`
+          );
         }
       }
-    } catch (error) {
-      console.error(`Failed to sync files. Error: ${error.message}`);
     }
 
     async function uploadFile(payload) {
       try {
         const response = await postModuleApp(
-          projectData[project].dev_url,
+          `${projectData[project].dev_url}/watch/${project}`,
           payload,
           projectData[project].access_key
         );
@@ -75,7 +109,44 @@ const syncCommand = program
       }
     }
 
-    console.log(`Watching directory: ${watchDirectory}`);
+    async function downloadFile(payload) {
+      try {
+        const response = await postModuleAppDownload(
+          `${projectData[project].dev_url}/download/${project}`,
+          payload,
+          projectData[project].access_key
+        );
+        const responseFile = JSON.parse(new TextDecoder().decode(response));
+
+        if (responseFile.data && responseFile.status === "success") {
+          return responseFile.data;
+        } else {
+          console.error(`${response.message}`);
+        }
+      } catch (error) {
+        console.error(`Error uploading file for ${project}:`, error);
+      }
+    }
+
+    async function manifestFile(payload) {
+      try {
+        const response = await postModuleApp(
+          `${projectData[project].dev_url}/manifest/${project}`,
+          payload,
+          projectData[project].access_key
+        );
+
+        if (response.data && response.status === "success") {
+          return response.data;
+        } else {
+          console.error(`${response.message}`);
+        }
+      } catch (error) {
+        console.error(`Error uploading file for ${project}:`, error);
+      }
+    }
+
+    console.log(`Syncing directory: ${watchDirectory} for ${project} project.`);
   });
 
 export default syncCommand;

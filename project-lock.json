@@ -3,13 +3,13 @@
     "ProjectOne": {
       "name": "Project One",
       "dir_name": "ProjectOne",
-      "access_key": "A80RCPDEN1",
-      "dev_url": "http://example-moduler.local/api/v1/watch/ProjectOne",
+      "access_key": "Z9IBW6LGDG",
+      "dev_url": "http://ltmodule.local/api/v1",
       "prod_url": "http://example-moduler.local",
       "modules": {
-        "ModuleOne": {
-          "name": "Module One",
-          "dir_name": "ModuleOne"
+        "Blog": {
+          "name": "Blog",
+          "dir_name": "Blog"
         },
         "ModuleTwo": {
           "name": "Module Two",
@@ -22,13 +22,13 @@
     "ProjectTwo": {
       "name": "Project Two",
       "dir_name": "ProjectTwo",
-      "access_key": "E0WZ1ITLKF",
-      "dev_url": "http://example-moduler.local/api/v1/watch/ProjectTwo",
+      "access_key": "VI6DPEYUSB",
+      "dev_url": "http://ltmodule.local/api/v1",
       "prod_url": "http://example-moduler.local",
       "modules": {
-        "ModuleOne": {
-          "name": "Module One",
-          "dir_name": "ModuleOne"
+        "Blog": {
+          "name": "Blog",
+          "dir_name": "Blog"
         },
         "ModuleThree": {
           "name": "Module Three",

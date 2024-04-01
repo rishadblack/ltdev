@@ -6,11 +6,13 @@ import { basename, dirname } from "path"; // Import dirname function to get the 
 
 const watchCommand = program
   .command("watch <project>")
-  .description("Watch files for changes and upload them for a specific project")
+  .description(
+    "Watch projects for changes and upload them for a specific project"
+  )
   .action(async (project) => {
     const projectData = await updateProject(project);
 
-    const watchDirectory = `./files/${projectData[project].dir_name}`; // Set the directory based on the project name
+    const watchDirectory = `./projects/${projectData[project].dir_name}`; // Set the directory based on the project name
 
     const watcher = chokidar.watch(watchDirectory, {
       ignoreInitial: true,
@@ -58,10 +60,12 @@ const watchCommand = program
         const fileName = basename(filePath);
         const fileDir = dirname(filePath); // Get the directory name
 
+        const fileContentBase64 = Buffer.from(fileContent).toString("base64");
+
         await uploadFile({
           file_name: fileName,
           file_path: filePath,
-          content: fileContent,
+          content: fileContentBase64,
           directory: fileDir, // Include directory name in the payload
           action_type: actionType,
           last_modified: (await stat(filePath)).mtime,
@@ -95,7 +99,7 @@ const watchCommand = program
     async function uploadFile(payload) {
       try {
         const response = await postModuleApp(
-          projectData[project].dev_url,
+          `${projectData[project].dev_url}/watch/${project}`,
           payload,
           projectData[project].access_key
         );
