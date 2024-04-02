@@ -31,33 +31,39 @@ const syncCommand = program
       return !ignoredExtensions.includes(extension);
     });
 
+    const watchDirectoryFilesNormalized = watchDirectoryFiles.map((file) => {
+      return file.replace(/\\/g, "/").replace(/\/+/g, "/");
+    });
+
     // Check if getManifestFiles contains data
     if (getManifestFiles && getManifestFiles["file_manifest"].length > 0) {
       // Iterate over each file in the manifest
       for (const manifestFile of getManifestFiles["file_manifest"]) {
-        const location = "projects\\" + manifestFile["location"];
-
+        const location = "projects/" + manifestFile["location"];
+        const normalizedLocation = location
+          .replace(/\\/g, "/")
+          .replace(/\/+/g, "/");
         // Check if the file's location exists in the watch directory
-        if (!watchDirectoryFiles.includes(location)) {
+        if (!watchDirectoryFilesNormalized.includes(normalizedLocation)) {
           const response = await downloadFile({
-            directory: location, // Include directory name in the payload
+            directory: normalizedLocation, // Include directory name in the payload
           });
           const fileData = Buffer.from(response.content, "base64");
 
-          // Ensure that the directory structure leading up to the file exists
-          await mkdir(dirname(location), { recursive: true });
+          // // Ensure that the directory structure leading up to the file exists
+          await mkdir(dirname(normalizedLocation), { recursive: true });
 
-          // Write the file to the local filesystem
-          await writeFile(location, fileData);
-          console.log(`File ${location} has been downloaded.`);
+          // // Write the file to the local filesystem
+          await writeFile(normalizedLocation, fileData);
+          console.log(`File ${normalizedLocation} has been downloaded.`);
         }
       }
     }
 
     // Iterate over each file in the watch directory
-    for (const watchDirectoryFile of watchDirectoryFiles) {
+    for (const watchDirectoryFile of watchDirectoryFilesNormalized) {
       // Construct the manifest location from the watch directory file path
-      const manifestLocation = watchDirectoryFile.replace("projects\\", "");
+      const manifestLocation = watchDirectoryFile.replace("projects/", "");
       const fileHash = await getFileHash(watchDirectoryFile);
       // Find the corresponding entry in the manifest file
       const manifestEntry = getManifestFiles["file_manifest"].find(
@@ -142,7 +148,7 @@ const syncCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        console.error(`Error manifest file for ${project}:`, error);
       }
     }
 

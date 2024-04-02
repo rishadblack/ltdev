@@ -4,7 +4,7 @@
   "description": "Description of your CLI application",
   "main": "index.js",
   "bin": {
-    "dev": "index.js"
+    "leotech": "index.js"
   },
   "scripts": {
     "test": "node -r esm index.js",

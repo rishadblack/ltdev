@@ -35,8 +35,6 @@ async function updateProject(ProjectSlug = null) {
 
     // Extract the specified property
     return projectTwoData;
-
-    return response.data;
   } catch (error) {
     throw new Error(
       `Error reading user details from session file: ${error.message}`
@@ -148,7 +146,6 @@ async function postWithToken(url, data = {}) {
     });
     return response.data;
   } catch (error) {
-    console.log(error);
     if (error.response.data.status === "error") {
       throw new Error(error.response.data.message);
     } else {
@@ -188,8 +185,13 @@ async function postModuleAppDownload(url, data = {}, token = "", web_key = "") {
     });
     return response.data;
   } catch (error) {
-    if (error.response.data.status === "error") {
-      throw new Error(error.response.data.message);
+    console.log(error);
+    const responseData = JSON.parse(
+      new TextDecoder().decode(error.response.data)
+    );
+
+    if (responseData.status === "error") {
+      throw new Error(responseData.message);
     } else {
       throw new Error(error.message);
     }
