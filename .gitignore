@@ -129,3 +129,4 @@ dist
 
 #extra 
 session-lock.json
+project-lock.json
