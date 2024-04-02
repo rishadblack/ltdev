@@ -44,6 +44,41 @@ async function updateProject(ProjectSlug = null) {
   }
 }
 
+async function modifyProject(modifications) {
+  try {
+    // Read the contents of the project-lock.json file
+    const jsonContent = await readFile("project-lock.json", "utf-8");
+
+    // Parse the JSON content into a JavaScript object
+    const projectData = JSON.parse(jsonContent);
+
+    // Make modifications to the project data as needed
+    // Example: Add or update properties
+    // modifications should be an object with keys as project slugs and values as the modifications
+    Object.entries(modifications).forEach(([projectSlug, modifiedData]) => {
+      const projectIndex = projectData.findIndex((project) =>
+        project.hasOwnProperty(projectSlug)
+      );
+      if (projectIndex !== -1) {
+        projectData[projectIndex][projectSlug] = {
+          ...projectData[projectIndex][projectSlug],
+          ...modifiedData,
+        };
+      }
+    });
+
+    // Convert the modified object back to a JSON string
+    const updatedJsonContent = JSON.stringify(projectData, null, 2);
+
+    // Write the updated JSON content back to the project-lock.json file
+    await writeFile("project-lock.json", updatedJsonContent);
+
+    console.log("project-lock.json file updated successfully.");
+  } catch (error) {
+    console.error("Error modifying project-lock.json file:", error.message);
+  }
+}
+
 // Function to read a JSON file and extract the specified property
 async function getProject(ProjectSlug = null) {
   try {
@@ -122,11 +157,13 @@ async function postWithToken(url, data = {}) {
   }
 }
 
-async function postModuleApp(url, data = {}, token = "") {
+async function postModuleApp(url, data = {}, token = "", web_key = "") {
   try {
     const response = await axios.post(`${url}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        web_key: web_key,
       },
     });
     return response.data;
@@ -139,12 +176,13 @@ async function postModuleApp(url, data = {}, token = "") {
   }
 }
 
-async function postModuleAppDownload(url, data = {}, token = "") {
+async function postModuleAppDownload(url, data = {}, token = "", web_key = "") {
   try {
     const response = await axios.post(`${url}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        web_key: web_key,
       },
       responseType: "arraybuffer",
     });
@@ -212,4 +250,5 @@ export {
   postModuleAppDownload,
   getAllFiles,
   getFileHash,
+  modifyProject,
 };
