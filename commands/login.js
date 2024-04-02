@@ -1,7 +1,7 @@
 import "dotenv/config"; // Load environment variables from .env file
 import { program } from "commander";
 import axios from "axios";
-import { setSession } from "../app/utils.js";
+import { setSession, handleErrorMessage } from "../app/utils.js";
 import inquirer from "inquirer";
 
 const loginCommand = program
@@ -46,12 +46,7 @@ const loginCommand = program
         console.error("Login failed. Invalid response from the server.");
       }
     } catch (error) {
-      if (error.response.data.status === "error") {
-        console.error(error.response.data.message);
-      } else {
-        console.log(error);
-        console.error("Login failed. Error:", error.message);
-      }
+      handleErrorMessage(error);
     }
   });
 

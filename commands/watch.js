@@ -1,5 +1,9 @@
 import { program } from "commander";
-import { postModuleApp, updateProject } from "../app/utils.js";
+import {
+  postModuleApp,
+  updateProject,
+  handleErrorMessage,
+} from "../app/utils.js";
 import chokidar from "chokidar";
 import { readFile, stat } from "fs/promises";
 import { basename, dirname } from "path"; // Import dirname function to get the directory name
@@ -73,7 +77,7 @@ const watchCommand = program
 
         // console.log(`Uploaded ${filePath} successfully.`);
       } catch (error) {
-        console.error(`Upload of ${filePath} failed. Error: ${error}`);
+        handleErrorMessage(error);
       }
     }
 
@@ -90,9 +94,7 @@ const watchCommand = program
 
         console.log(`Handled directory event (${actionType}): ${dirPath}`);
       } catch (error) {
-        console.error(
-          `Directory event (${actionType}) failed. Error: ${error}`
-        );
+        handleErrorMessage(error);
       }
     }
 
@@ -107,7 +109,7 @@ const watchCommand = program
         //   `Uploaded ${payload.file_path} successfully for ${project}`
         // );
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 

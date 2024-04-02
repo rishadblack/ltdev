@@ -5,6 +5,7 @@ import {
   postModuleAppDownload,
   getAllFiles,
   getFileHash,
+  handleErrorMessage,
 } from "../app/utils.js";
 import { readdir, stat, readFile, writeFile, mkdir } from "fs/promises";
 import { join, basename, dirname } from "path";
@@ -93,9 +94,7 @@ const syncCommand = program
           });
           console.log(`File ${manifestLocation} has been updated.`);
         } catch (error) {
-          console.error(
-            `Upload of ${watchDirectoryFile} failed. Error: ${error}`
-          );
+          handleErrorMessage(error);
         }
       }
     }
@@ -111,7 +110,7 @@ const syncCommand = program
         //   `Uploaded ${payload.file_path} successfully for ${project}`
         // );
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 
@@ -130,7 +129,7 @@ const syncCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 
@@ -148,7 +147,7 @@ const syncCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error manifest file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 

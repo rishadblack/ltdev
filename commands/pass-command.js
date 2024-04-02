@@ -6,6 +6,7 @@ import {
   updateProject,
   getAllFiles,
   postModuleAppDownload,
+  handleErrorMessage,
 } from "../app/utils.js";
 import inquirer from "inquirer";
 import { writeFile, mkdir } from "fs/promises";
@@ -86,7 +87,7 @@ const passCommand = program
         console.error("Error running command.");
       }
     } catch (error) {
-      console.error(error.message);
+      handleErrorMessage(error);
     }
 
     async function runCommand(payload) {
@@ -103,7 +104,7 @@ const passCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 
@@ -121,7 +122,7 @@ const passCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
 
@@ -140,7 +141,7 @@ const passCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
   });

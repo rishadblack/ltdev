@@ -1,7 +1,7 @@
 // commands/logout.js
 import "dotenv/config";
 import { program } from "commander";
-import { postWithToken } from "../app/utils.js";
+import { postWithToken, handleErrorMessage } from "../app/utils.js";
 
 const logoutCommand = program
   .command("logout")
@@ -17,7 +17,7 @@ const logoutCommand = program
         console.error("Logout failed. Invalid response from the server.");
       }
     } catch (error) {
-      console.error(error.message);
+      handleErrorMessage(error);
     }
   });
 

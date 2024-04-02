@@ -9,9 +9,7 @@ async function setSession(data) {
     // Read the contents of the file
     await writeFile("session-lock.json", JSON.stringify(data, null, 2));
   } catch (error) {
-    throw new Error(
-      `Error reading user details from session file: ${error.message}`
-    );
+    handleErrorMessage(error);
   }
 }
 
@@ -36,9 +34,7 @@ async function updateProject(ProjectSlug = null) {
     // Extract the specified property
     return projectTwoData;
   } catch (error) {
-    throw new Error(
-      `Error reading user details from session file: ${error.message}`
-    );
+    handleErrorMessage(error);
   }
 }
 
@@ -73,7 +69,7 @@ async function modifyProject(modifications) {
 
     console.log("project-lock.json file updated successfully.");
   } catch (error) {
-    console.error("Error modifying project-lock.json file:", error.message);
+    handleErrorMessage(error);
   }
 }
 
@@ -95,9 +91,7 @@ async function getProject(ProjectSlug = null) {
     // Extract the specified property
     return projectTwoData;
   } catch (error) {
-    throw new Error(
-      `Error reading user details from session file: ${error.message}`
-    );
+    handleErrorMessage(error);
   }
 }
 
@@ -113,9 +107,7 @@ async function getUser() {
     // Extract the specified property
     return jsonData["user"];
   } catch (error) {
-    throw new Error(
-      `Error reading user details from session file: ${error.message}`
-    );
+    handleErrorMessage(error);
   }
 }
 
@@ -131,9 +123,7 @@ async function getBearerToken() {
     // Extract the specified property
     return jsonData["authorization"]["token"];
   } catch (error) {
-    throw new Error(
-      `Error reading bearer token from session file: ${error.message}`
-    );
+    handleErrorMessage(error);
   }
 }
 
@@ -146,11 +136,7 @@ async function postWithToken(url, data = {}) {
     });
     return response.data;
   } catch (error) {
-    if (error.response.data.status === "error") {
-      throw new Error(error.response.data.message);
-    } else {
-      throw new Error(error.message);
-    }
+    handleErrorMessage(error);
   }
 }
 
@@ -165,11 +151,7 @@ async function postModuleApp(url, data = {}, token = "", web_key = "") {
     });
     return response.data;
   } catch (error) {
-    if (error.response.data.status === "error") {
-      throw new Error(error.response.data.message);
-    } else {
-      throw new Error(error.message);
-    }
+    handleErrorMessage(error);
   }
 }
 
@@ -185,20 +167,15 @@ async function postModuleAppDownload(url, data = {}, token = "", web_key = "") {
     });
     return response.data;
   } catch (error) {
-    console.log(error);
     const responseData = JSON.parse(
       new TextDecoder().decode(error.response.data)
     );
 
-    if (responseData.status === "error") {
-      throw new Error(responseData.message);
-    } else {
-      throw new Error(error.message);
-    }
+    handleErrorMessage(error);
   }
 }
 
-async function filterFilesByExtension(files, extensions) {
+function filterFilesByExtension(files, extensions) {
   return files.filter((file) => {
     const fileExtension = file.split(".").pop(); // Get the file extension
     return !extensions.includes(fileExtension); // Check if the extension is not in the list
@@ -239,6 +216,23 @@ async function getFileHash(filePath) {
   return fileHash;
 }
 
+function handleErrorMessage(error) {
+  if (
+    error.response &&
+    error.response.data &&
+    error.response.data.status === "error"
+  ) {
+    console.error(error.response.data.message);
+    process.exit(1);
+  } else if (error.message) {
+    console.error("Error:", error.message);
+    throw error.message;
+  } else {
+    console.error("Unknown error occurred.");
+    throw error;
+  }
+}
+
 // Export the functions
 export {
   setSession,
@@ -253,4 +247,5 @@ export {
   getAllFiles,
   getFileHash,
   modifyProject,
+  handleErrorMessage,
 };

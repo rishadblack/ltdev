@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { program } from "commander";
-import { postModuleApp, updateProject, modifyProject } from "../app/utils.js";
+import {
+  postModuleApp,
+  updateProject,
+  modifyProject,
+  handleErrorMessage,
+} from "../app/utils.js";
 
 const passCommand = program
   .command("session <project>")
@@ -36,7 +41,7 @@ const passCommand = program
         console.error("Error running command.");
       }
     } catch (error) {
-      console.error(error.message);
+      handleErrorMessage(error);
     }
 
     async function startSession(payload) {
@@ -53,7 +58,7 @@ const passCommand = program
           console.error(`${response.message}`);
         }
       } catch (error) {
-        console.error(`Error uploading file for ${project}:`, error);
+        handleErrorMessage(error);
       }
     }
   });
