@@ -1,4 +1,4 @@
-import { readdir, stat, readFile, writeFile } from "fs/promises";
+import { readdir, stat, readFile, writeFile, access, mkdir } from "fs/promises";
 import md5File from "md5-file";
 import axios from "axios";
 import { join, basename, dirname } from "path";
@@ -24,6 +24,31 @@ async function updateProject(ProjectSlug = null) {
       "project-lock.json",
       JSON.stringify(response.data, null, 2)
     );
+    if (response.status) {
+      // Assuming response.data is your array of project objects
+      for (const project of response.data) {
+        const projectKey = Object.keys(project)[0]; // Get the project slug
+        // Get the modules object for the current project
+        const modules = project[projectKey].modules;
+        // Loop through each module in the modules object
+        for (const moduleName in modules) {
+          if (modules.hasOwnProperty(moduleName)) {
+            // Access each module
+            const module = modules[moduleName];
+            const watchDirectory = `./projects/${project[projectKey].dir_name}/${module.dir_name}`;
+            // Check if the directory exists
+            try {
+              // Check if the directory exists
+              await access(watchDirectory);
+            } catch (error) {
+              // If it doesn't exist, create it
+              await mkdir(watchDirectory, { recursive: true });
+              console.log(`Directory created: ${watchDirectory}`);
+            }
+          }
+        }
+      }
+    }
 
     if (ProjectSlug === null) return response.data;
 
