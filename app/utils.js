@@ -14,7 +14,7 @@ async function setSession(data) {
 }
 
 // Function to read a JSON file and extract the specified property
-async function updateProject(ProjectSlug = null) {
+async function updateProject(ProjectSlug = null, ModuleSlug = null) {
   try {
     const response = await postWithToken("v1/user/projects", {
       project: ProjectSlug,
@@ -56,7 +56,19 @@ async function updateProject(ProjectSlug = null) {
       project.hasOwnProperty(ProjectSlug)
     );
 
-    // Extract the specified property
+    if (!projectTwoData) {
+      return handleErrorMessage(
+        `You have no access for : ${ProjectSlug} Project`
+      );
+    }
+
+    if (
+      ModuleSlug &&
+      !projectTwoData[ProjectSlug].modules.hasOwnProperty(ModuleSlug)
+    ) {
+      handleErrorMessage(`You have no access for : ${ModuleSlug} Project`);
+    }
+
     return projectTwoData;
   } catch (error) {
     handleErrorMessage(error);
@@ -154,11 +166,15 @@ async function getBearerToken() {
 
 async function postWithToken(url, data = {}) {
   try {
-    const response = await axios.post(`${process.env.BASE_URL}/${url}`, data, {
-      headers: {
-        Authorization: `Bearer ${await getBearerToken()}`,
-      },
-    });
+    const response = await axios.post(
+      `${process.env.BASE_URL}/api/${url}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${await getBearerToken()}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     handleErrorMessage(error);
@@ -167,7 +183,7 @@ async function postWithToken(url, data = {}) {
 
 async function postModuleApp(url, data = {}, token = "", web_key = "") {
   try {
-    const response = await axios.post(`${url}`, data, {
+    const response = await axios.post(url, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -250,8 +266,12 @@ function handleErrorMessage(error) {
     console.error(error.response.data.message);
     process.exit(1);
   } else if (error.message) {
+    console.log(error);
     console.error("Error:", error.message);
     throw error.message;
+  } else if (error) {
+    console.error(error);
+    process.exit(1);
   } else {
     console.error("Unknown error occurred.");
     throw error;

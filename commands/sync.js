@@ -14,7 +14,7 @@ const syncCommand = program
   .command("sync <project> <module>")
   .description("Watch projects for changes and upload them")
   .action(async (project, module) => {
-    const projectData = await updateProject(project);
+    const projectData = await updateProject(project, module);
 
     // Define the directory to watch and the API endpoint to upload to
     const watchDirectory = `./projects/${projectData[project].dir_name}/${projectData[project]["modules"][module].dir_name}`; // Change this to your desired directory
@@ -24,7 +24,7 @@ const syncCommand = program
     });
 
     const watchDirectoryFilesData = await getAllFiles(watchDirectory);
-
+    console.log("check");
     const ignoredExtensions = [".gitkeep", ".ignore", ".temp"]; // Add your desired extensions here
 
     const watchDirectoryFiles = watchDirectoryFilesData.filter((file) => {
@@ -102,7 +102,7 @@ const syncCommand = program
     async function uploadFile(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/watch/${project}`,
+          `${projectData[project].dev_url}/api/v1/watch/${project}`,
           payload,
           projectData[project].access_key
         );
@@ -117,7 +117,7 @@ const syncCommand = program
     async function downloadFile(payload) {
       try {
         const response = await postModuleAppDownload(
-          `${projectData[project].dev_url}/download/${project}`,
+          `${projectData[project].dev_url}/api/v1/download/${project}`,
           payload,
           projectData[project].access_key
         );
@@ -136,7 +136,7 @@ const syncCommand = program
     async function manifestFile(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/manifest/${project}`,
+          `${projectData[project].dev_url}/api/v1/manifest/${project}`,
           payload,
           projectData[project].access_key
         );

@@ -47,7 +47,7 @@ const passCommand = program
     async function startSession(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/session/${project}`,
+          `${projectData[project].dev_url}/api/v1/session/${project}`,
           payload,
           projectData[project].access_key
         );

@@ -16,7 +16,7 @@ const passCommand = program
   .command("command <project> <module>")
   .description("Pass command to server")
   .action(async (project, module) => {
-    const projectData = await updateProject(project);
+    const projectData = await updateProject(project, module);
 
     try {
       const credentials = await inquirer.prompt([
@@ -93,7 +93,7 @@ const passCommand = program
     async function runCommand(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/command/${project}`,
+          `${projectData[project].dev_url}/api/v1/command/${project}`,
           payload,
           projectData[project].access_key
         );
@@ -111,7 +111,7 @@ const passCommand = program
     async function manifestFile(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/manifest/${project}`,
+          `${projectData[project].dev_url}/api/v1/manifest/${project}`,
           payload,
           projectData[project].access_key
         );
@@ -129,7 +129,7 @@ const passCommand = program
     async function downloadFile(payload) {
       try {
         const response = await postModuleAppDownload(
-          `${projectData[project].dev_url}/download/${project}`,
+          `${projectData[project].dev_url}/api/v1/download/${project}`,
           payload,
           projectData[project].access_key
         );

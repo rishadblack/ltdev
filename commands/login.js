@@ -25,10 +25,15 @@ const loginCommand = program
 
       // Make a POST request to the login endpoint
       const response = await axios.post(
-        `${process.env.BASE_URL}/v1/user/login`,
+        `${process.env.BASE_URL}/api/v1/user/login`,
         {
           email: credentials.email,
           password: credentials.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 

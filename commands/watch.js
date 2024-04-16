@@ -15,7 +15,7 @@ const watchCommand = program
   )
   .action(async (project) => {
     const projectData = await updateProject(project);
-
+    console.log(projectData);
     const watchDirectory = `./projects/${projectData[project].dir_name}`; // Set the directory based on the project name
 
     const watcher = chokidar.watch(watchDirectory, {
@@ -101,7 +101,7 @@ const watchCommand = program
     async function uploadFile(payload) {
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/watch/${project}`,
+          `${projectData[project].dev_url}/api/v1/watch/${project}`,
           payload,
           projectData[project].access_key
         );
