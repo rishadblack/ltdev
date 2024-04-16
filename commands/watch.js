@@ -15,7 +15,6 @@ const watchCommand = program
   )
   .action(async (project) => {
     const projectData = await updateProject(project);
-    console.log(projectData);
     const watchDirectory = `./projects/${projectData[project].dir_name}`; // Set the directory based on the project name
 
     const watcher = chokidar.watch(watchDirectory, {
@@ -41,29 +40,23 @@ const watchCommand = program
     watcher.on("unlink", async (filePath) => {
       await handleDirectoryEvent(filePath, "delete");
       console.log(`File ${filePath} has been removed.`);
-      // Handle file removal as needed
     });
 
     watcher.on("addDir", async (dirPath) => {
       await handleDirectoryEvent(dirPath, "create-dir");
       console.log(`Directory ${dirPath} has been created.`);
-      // Handle directory creation as needed
     });
 
     watcher.on("unlinkDir", async (dirPath) => {
       await handleDirectoryEvent(dirPath, "delete-dir");
       console.log(`Directory ${dirPath} has been removed.`);
-      // Handle directory removal as needed
     });
 
     async function handleFileEvent(filePath, actionType) {
       try {
         const fileContent = await readFile(filePath, "utf-8");
-        // console.log(`Uploading ${filePath}...`);
-
         const fileName = basename(filePath);
         const fileDir = dirname(filePath); // Get the directory name
-
         const fileContentBase64 = Buffer.from(fileContent).toString("base64");
 
         await uploadFile({
@@ -74,8 +67,6 @@ const watchCommand = program
           action_type: actionType,
           last_modified: (await stat(filePath)).mtime,
         });
-
-        // console.log(`Uploaded ${filePath} successfully.`);
       } catch (error) {
         handleErrorMessage(error);
       }

@@ -22,10 +22,8 @@ const syncCommand = program
     const getManifestFiles = await manifestFile({
       module: module,
     });
-
     const watchDirectoryFilesData = await getAllFiles(watchDirectory);
-    console.log("check");
-    const ignoredExtensions = [".gitkeep", ".ignore", ".temp"]; // Add your desired extensions here
+    const ignoredExtensions = [".gitkeep", ".ignore", ".gitignore", ".temp"]; // Add your desired extensions here
 
     const watchDirectoryFiles = watchDirectoryFilesData.filter((file) => {
       const extension = file.substr(file.lastIndexOf("."));

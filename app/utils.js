@@ -224,7 +224,7 @@ function filterFilesByExtension(files, extensions) {
 }
 
 // Recursive function to get all files in a directory and its subdirectories
-async function getAllFiles(directory) {
+async function getAllFiles(directory, ignoreFolders = [".git"]) {
   let files = [];
 
   // Read the contents of the directory
@@ -238,9 +238,15 @@ async function getAllFiles(directory) {
     // Get the stats of the entry
     const stats = await stat(fullPath);
 
-    // If the entry is a directory, recursively get its files
+    // Check if the entry is a directory
     if (stats.isDirectory()) {
-      const subDirectoryFiles = await getAllFiles(fullPath);
+      // Check if the directory should be ignored
+      if (ignoreFolders.includes(entry)) {
+        continue; // Skip this directory
+      }
+
+      // Recursively get files in the subdirectory
+      const subDirectoryFiles = await getAllFiles(fullPath, ignoreFolders);
       files = files.concat(subDirectoryFiles);
     } else {
       // If the entry is a file, add it to the list of files
