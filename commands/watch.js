@@ -54,7 +54,7 @@ const watchCommand = program
 
     async function handleFileEvent(filePath, actionType) {
       try {
-        const fileContent = await readFile(filePath, "utf-8");
+        const fileContent = await readFile(filePath);
         const fileName = basename(filePath);
         const fileDir = dirname(filePath); // Get the directory name
         const fileContentBase64 = Buffer.from(fileContent).toString("base64");

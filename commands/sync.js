@@ -75,7 +75,7 @@ const syncCommand = program
         (manifestEntry && manifestEntry["hash"] !== fileHash)
       ) {
         try {
-          const fileContent = await readFile(watchDirectoryFile, "utf-8");
+          const fileContent = await readFile(watchDirectoryFile);
 
           const fileName = basename(watchDirectoryFile);
           const fileDir = dirname(watchDirectoryFile); // Get the directory name
