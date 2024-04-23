@@ -54,7 +54,7 @@ const syncCommand = program
 
           // // Write the file to the local filesystem
           await writeFile(normalizedLocation, fileData);
-          console.log(`File ${normalizedLocation} has been downloaded.`);
+          console.log(`Sync File ${normalizedLocation} has been downloaded.`);
         }
       }
     }
@@ -90,7 +90,7 @@ const syncCommand = program
             action_type: "update",
             last_modified: (await stat(watchDirectoryFile)).mtime,
           });
-          console.log(`File ${manifestLocation} has been updated.`);
+          console.log(`Sync File ${manifestLocation} has been updated.`);
         } catch (error) {
           handleErrorMessage(error);
         }
