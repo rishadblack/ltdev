@@ -212,7 +212,11 @@ async function postModuleAppDownload(url, data = {}, token = "", web_key = "") {
       new TextDecoder().decode(error.response.data)
     );
 
-    handleErrorMessage(error);
+    if (responseData.status === "error") {
+      handleErrorMessage(responseData.message);
+    } else {
+      handleErrorMessage(error);
+    }
   }
 }
 

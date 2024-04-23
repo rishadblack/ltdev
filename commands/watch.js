@@ -1,27 +1,43 @@
 import { program } from "commander";
+import { exec } from "child_process";
 import {
   postModuleApp,
   updateProject,
   handleErrorMessage,
+  getProject,
 } from "../app/utils.js";
 import chokidar from "chokidar";
 import { readFile, stat } from "fs/promises";
 import { basename, dirname } from "path"; // Import dirname function to get the directory name
 
 const watchCommand = program
-  .command("watch <project>")
+  .command("watch <project> [module]")
   .description(
     "Watch projects for changes and upload them for a specific project"
   )
-  .action(async (project) => {
+  .action(async (project, module = null) => {
     const projectData = await updateProject(project);
     const watchDirectory = `./projects/${projectData[project].dir_name}`; // Set the directory based on the project name
 
     const watcher = chokidar.watch(watchDirectory, {
       ignoreInitial: true,
+      ignored: /(^|[/\\])\../, // Ignore dotfiles
     });
 
     watcher.on("ready", () => {
+      if (module) {
+        exec(`leotech sync ${project} ${module}`, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error executing command: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.error(`Command stderr: ${stderr}`);
+            return;
+          }
+          console.log(stdout);
+        });
+      }
       console.log(
         `Watching directory for ${projectData[project].name}: ${watchDirectory}`
       );
@@ -90,21 +106,17 @@ const watchCommand = program
     }
 
     async function uploadFile(payload) {
+      const projectLockData = await getProject(project);
       try {
         const response = await postModuleApp(
-          `${projectData[project].dev_url}/api/v1/watch/${project}`,
+          `${projectLockData[project].dev_url}/api/v1/watch/${project}`,
           payload,
-          projectData[project].access_key
+          projectLockData[project].access_key
         );
-        // console.log(
-        //   `Uploaded ${payload.file_path} successfully for ${project}`
-        // );
       } catch (error) {
         handleErrorMessage(error);
       }
     }
-
-    // console.log(`Watching directory: ${watchDirectory}`);
   });
 
 export default watchCommand;
