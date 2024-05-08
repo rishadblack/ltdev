@@ -273,6 +273,7 @@ function handleErrorMessage(error) {
     error.response.data &&
     error.response.data.status === "error"
   ) {
+    console.error(error.response.data.errors);
     console.error(error.response.data.message);
     process.exit(1);
   } else if (error.message) {
