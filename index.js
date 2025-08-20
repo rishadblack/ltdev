@@ -7,7 +7,7 @@ import webSession from "./commands/web-session.js";
 import loginCommand from "./commands/login.js";
 import logoutCommand from "./commands/logout.js";
 
-program.version("1.0.0").description("My CLI Tool");
+program.version("1.1.9").description("My CLI Tool");
 
 // Register your commands
 program.addCommand(loginCommand, { name: "login" });
